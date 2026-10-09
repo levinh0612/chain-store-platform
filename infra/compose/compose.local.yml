@@ -1,0 +1,4 @@
+services:
+  postgres: { ports: ['5432:5432'] }
+  redis: { ports: ['6380:6379'] }
+  keycloak: { ports: ['8180:8080'] }

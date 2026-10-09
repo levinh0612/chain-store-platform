@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+# Superuser chỉ dùng để khởi tạo. Mỗi service: 1 schema + role owner (Flyway) + role app (DML). KHÔNG cấp quyền chéo.
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
+  CREATE ROLE keycloak LOGIN PASSWORD '$KC_DB_PASSWORD';
+  CREATE DATABASE keycloak OWNER keycloak;
+  CREATE EXTENSION IF NOT EXISTS btree_gist;
+  CREATE EXTENSION IF NOT EXISTS pg_trgm;
+EOSQL
+mk() { # $1=schema $2=mật khẩu owner $3=mật khẩu app
+  psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
+    CREATE ROLE ${1}_owner LOGIN PASSWORD '$2' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+    CREATE ROLE ${1}_app LOGIN PASSWORD '$3' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+    CREATE SCHEMA $1 AUTHORIZATION ${1}_owner;
+    GRANT CONNECT ON DATABASE $POSTGRES_DB TO ${1}_owner, ${1}_app;
+    GRANT USAGE ON SCHEMA $1 TO ${1}_app;
+    ALTER ROLE ${1}_owner SET search_path = $1, public;
+    ALTER ROLE ${1}_app SET search_path = $1, public;
+    ALTER DEFAULT PRIVILEGES FOR ROLE ${1}_owner IN SCHEMA $1 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${1}_app;
+    ALTER DEFAULT PRIVILEGES FOR ROLE ${1}_owner IN SCHEMA $1 GRANT USAGE, SELECT ON SEQUENCES TO ${1}_app;
+EOSQL
+}
+mk core "$CORE_OWNER_PASSWORD" "$CORE_APP_PASSWORD"
+mk sync "$SYNC_OWNER_PASSWORD" "$SYNC_APP_PASSWORD"
+mk ingest "$INGEST_OWNER_PASSWORD" "$INGEST_APP_PASSWORD"
