@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.env
+infra/compose/.env
+infra/compose/secrets/
+*.log
+.DS_Store
