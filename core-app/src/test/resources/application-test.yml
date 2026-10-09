@@ -1,0 +1,6 @@
+spring:
+  flyway:
+    url:
+    user:
+    password:
+  data.redis.password:

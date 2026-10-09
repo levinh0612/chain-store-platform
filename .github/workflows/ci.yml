@@ -1,0 +1,21 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Build, test, lint
+        working-directory: core-app
+        run: ./mvnw -B -ntp verify
+      - name: Validate compose
+        working-directory: infra/compose
+        run: cp .env.example .env && docker compose -f compose.yml -f compose.local.yml config -q
