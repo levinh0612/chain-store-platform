@@ -1,0 +1,29 @@
+spring:
+  application.name: core-app
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/platform}
+    username: ${DB_APP_USER:core_app}
+    password: ${DB_APP_PASSWORD}
+  flyway:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/platform}
+    user: ${DB_MIGRATE_USER:core_owner}
+    password: ${DB_MIGRATE_PASSWORD}
+    schemas: core
+    default-schema: core
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+    properties.hibernate.default_schema: core
+  data.redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6380}
+    password: ${REDIS_PASSWORD}
+
+server.port: ${SERVER_PORT:8082}
+
+management:
+  server.port: ${MANAGEMENT_PORT:8081}
+  endpoints.web:
+    base-path: /
+    exposure.include: health,metrics,prometheus
+  endpoint.health.probes.enabled: true

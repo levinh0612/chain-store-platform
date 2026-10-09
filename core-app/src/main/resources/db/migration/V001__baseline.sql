@@ -1,0 +1,1 @@
+-- Baseline: schema core do init script tao; migration that bat dau tu TASK-003.
